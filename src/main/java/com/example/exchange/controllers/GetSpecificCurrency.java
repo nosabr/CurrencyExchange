@@ -7,12 +7,11 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-
-@WebServlet("/currencies")
-public class Currencies extends HttpServlet {
+@WebServlet ("/currencies/")
+public class GetSpecificCurrency extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().println("Hello from NewServlet!");
+        super.doGet(req, resp);
     }
 
     @Override
