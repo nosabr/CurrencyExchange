@@ -3,6 +3,7 @@ package com.example.exchange.models;
 
 
 import com.example.exchange.DTO.CurrencyDTO;
+import com.example.exchange.DTO.ExchangeRateDTO;
 import com.example.exchange.DTO.MessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
@@ -27,14 +28,12 @@ public class DBActions {
         try {
             statement = connection.getConnection().createStatement(); //создаем утверждение?
             ResultSet resultSet = statement.executeQuery(query);
-
             List<CurrencyDTO> currencyDTOList = new ArrayList<>(); // список со всеми рядами данных
             while (resultSet.next()){ // добавление всех полей в список
                 currencyDTOList.add(new CurrencyDTO(resultSet.getInt(1),
                         resultSet.getString(2), resultSet.getString(3),
                         resultSet.getString(4)));
             }
-
             resp.setContentType("application/json; charset=UTF-8");
             out = resp.getWriter();
             String out1 = objectMapper.writeValueAsString(currencyDTOList);
@@ -48,6 +47,52 @@ public class DBActions {
         }
     }
 
+    public void getAllExchangeRates(HttpServletResponse resp){
+        DBConnection connection = new DBConnection();
+        String query = "SELECT * FROM exchangerates";
+        try {
+            statement = connection.getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            List<ExchangeRateDTO> exchangeRateDTOlist = new ArrayList<>();
+            while(resultSet.next()){
+                exchangeRateDTOlist.add(new ExchangeRateDTO(resultSet.getInt(1),
+                                getCurrencyDTObyID(resultSet.getInt(2)),
+                                getCurrencyDTObyID(resultSet.getInt(3)),
+                                resultSet.getInt(4)));
+            }
+            resp.setContentType("application/json; charset=UTF-8");
+            out = resp.getWriter();
+            String out1 = objectMapper.writeValueAsString(exchangeRateDTOlist);
+            out.println(out1);
+            statement.close();
+            resultSet.close();
+            connection.close();
+        } catch (SQLException | IOException e) {
+            resp.setStatus(500);
+            showError(resp, String.valueOf(e));
+        }
+    }
+
+    private CurrencyDTO getCurrencyDTObyID(int id){
+        DBConnection connection = new DBConnection();
+        String query = "SELECT * FROM currencies WHERE id = " + id + ";";
+        CurrencyDTO out;
+        try {
+            Statement statement = connection.getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            resultSet.next();
+            out = new CurrencyDTO(resultSet.getInt(1),
+                    resultSet.getString(2),
+                    resultSet.getString(3),
+                    resultSet.getString(4));
+            statement.close();
+            resultSet.close();
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return out;
+    }
     public void showError(HttpServletResponse resp, String message){
         try {
             resp.setContentType("application/json; charset=UTF-8");
