@@ -9,7 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet ("/exchangerates")
+@WebServlet ("/exchangeRates")
 public class GetAllExchangeRates extends HttpServlet {
 
     DBActions actions = new DBActions();

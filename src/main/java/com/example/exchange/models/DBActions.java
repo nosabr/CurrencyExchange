@@ -160,7 +160,46 @@ public class DBActions {
     }
 
     public void getSpecificExchangeRate(HttpServletRequest req, HttpServletResponse resp){
-
+        DBConnection connection = new DBConnection();
+        String path = req.getRequestURI();
+        String[] urls = path.split("/");
+        if(urls[urls.length - 1].length() != 6 || !urls[urls.length - 2].equals("exchangeRate")){
+            resp.setStatus(400);
+            showError(resp, "Wrong Request");
+        } else {
+            String currCode1 = urls[urls.length - 1].substring(0,3).toUpperCase();
+            String currCode2 = urls[urls.length - 1].substring(3).toUpperCase();
+            int currID1 = findCurrencyByCode(currCode1);
+            int currID2 = findCurrencyByCode(currCode2);
+            String query = "SELECT * FROM exchangerates WHERE " +
+                    "(basecurrencyid = ? AND targetcurrencyid = ?) OR " +
+                    "(basecurrencyid = ? AND targetcurrencyid = ?)";
+            try {
+                prStatement = connection.getConnection().prepareStatement(query);
+                prStatement.setInt(1,currID1);
+                prStatement.setInt(2,currID2);
+                prStatement.setInt(3,currID2);
+                prStatement.setInt(4,currID1);
+                ResultSet rs = prStatement.executeQuery();
+                if(rs.next()){
+                    ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
+                            getCurrencyDTObyID(rs.getInt(2)),getCurrencyDTObyID(rs.getInt(3)),
+                            rs.getInt(4));
+                    resp.setContentType("application/json; charset=UTF-8");
+                    out = resp.getWriter();
+                    String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
+                    out.println(out1);
+                    rs.close();
+                    prStatement.close();
+                    connection.close();
+                } else {
+                    resp.setStatus(404);
+                    showError(resp, "No such currency pair found");
+                }
+            } catch (SQLException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     private int findCurrencyByCode(String code) {
