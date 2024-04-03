@@ -21,6 +21,6 @@ public class GetAllCurrencies extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        actions.postNewCurrency(req,resp);
+        actions.insertNewCurrency(req,resp);
     }
 }

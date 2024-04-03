@@ -12,15 +12,13 @@ import org.postgresql.jdbc.ResourceLock;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
 
 public class DBActions {
+    private PreparedStatement prStatement;
     private Statement statement;
     private PrintWriter out;
     private ObjectMapper objectMapper = new ObjectMapper();
@@ -48,63 +46,6 @@ public class DBActions {
         } catch (SQLException | IOException e){
             resp.setStatus(500);
             showError(resp, "DB is not available");
-        }
-    }
-
-    public void getAllExchangeRates(HttpServletResponse resp){
-        DBConnection connection = new DBConnection();
-        String query = "SELECT * FROM exchangerates";
-        try {
-            statement = connection.getConnection().createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
-            List<ExchangeRateDTO> exchangeRateDTOlist = new ArrayList<>();
-            while(resultSet.next()){
-                exchangeRateDTOlist.add(new ExchangeRateDTO(resultSet.getInt(1),
-                                getCurrencyDTObyID(resultSet.getInt(2)),
-                                getCurrencyDTObyID(resultSet.getInt(3)),
-                                resultSet.getInt(4)));
-            }
-            resp.setContentType("application/json; charset=UTF-8");
-            out = resp.getWriter();
-            String out1 = objectMapper.writeValueAsString(exchangeRateDTOlist);
-            out.println(out1);
-            statement.close();
-            resultSet.close();
-            connection.close();
-        } catch (SQLException | IOException e) {
-            resp.setStatus(500);
-            showError(resp, String.valueOf(e));
-        }
-    }
-
-    private CurrencyDTO getCurrencyDTObyID(int id){
-        DBConnection connection = new DBConnection();
-        String query = "SELECT * FROM currencies WHERE id = " + id + ";";
-        CurrencyDTO out;
-        try {
-            Statement statement = connection.getConnection().createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
-            resultSet.next();
-            out = new CurrencyDTO(resultSet.getInt(1),
-                    resultSet.getString(2),
-                    resultSet.getString(3),
-                    resultSet.getString(4));
-            statement.close();
-            resultSet.close();
-            connection.close();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return out;
-    }
-    public void showError(HttpServletResponse resp, String message){
-        try {
-            resp.setContentType("application/json; charset=UTF-8");
-            out = resp.getWriter();
-            out.println(objectMapper.writeValueAsString(new MessageDTO(message)));
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
     }
 
@@ -145,7 +86,7 @@ public class DBActions {
         }
     }
 
-    public void postNewCurrency(HttpServletRequest req, HttpServletResponse resp) {
+    public void insertNewCurrency(HttpServletRequest req, HttpServletResponse resp) {
         DBConnection connection = new DBConnection();
         String name = req.getParameter("name");
         String code = req.getParameter("code");
@@ -154,17 +95,26 @@ public class DBActions {
                 name.isEmpty() || code.isEmpty() || sign.isEmpty()){
                     resp.setStatus(400);
                     showError(resp, "A required form is missing");
+        }else if(code.length() != 3){
+            resp.setStatus(400);
+            showError(resp,"Code's length must be 3 symbols");
         } else if(findCurrencyByCode(code) != 0){
             resp.setStatus(409);
             showError(resp, "Currency already exists");
         } else {
-            String queryInsert = "INSERT INTO currencies (fullname, code, sign) VALUES (" +
-                    "'" + name + "','"+ code + "','" + sign + "')";
-            String querySelect = "SELECT * FROM currencies WHERE code = '" + code + "'";
+            String queryInsert = "INSERT INTO currencies (fullname, code, sign) VALUES (?,?,?)";
+            String querySelect =  "SELECT * FROM currencies WHERE code = ?";
             try {
-                statement = connection.getConnection().createStatement();
-                statement.executeUpdate(queryInsert);
-                ResultSet rs = statement.executeQuery(querySelect);
+                //Вызываем Insert
+                prStatement = connection.getConnection().prepareStatement(queryInsert);
+                prStatement.setString(1,name);
+                prStatement.setString(2,code);
+                prStatement.setString(3,sign);
+                prStatement.executeUpdate();
+                // Вызываем Select
+                prStatement = connection.getConnection().prepareStatement(querySelect);
+                prStatement.setString(1,code);
+                ResultSet rs = prStatement.executeQuery();
                 if (rs.next()) {
                     resp.setContentType("application/json; charset=UTF-8");
                     out = resp.getWriter();
@@ -172,7 +122,7 @@ public class DBActions {
                             rs.getString(2), rs.getString(3), rs.getString(4)));
                     out.println(out1);
                 }
-                statement.close();
+                prStatement.close();
                 rs.close();
                 connection.close();
             } catch (SQLException | IOException e) {
@@ -183,22 +133,83 @@ public class DBActions {
 
     }
 
+    public void getAllExchangeRates(HttpServletResponse resp){
+        DBConnection connection = new DBConnection();
+        String query = "SELECT * FROM exchangerates";
+        try {
+            statement = connection.getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            List<ExchangeRateDTO> exchangeRateDTOlist = new ArrayList<>();
+            while(resultSet.next()){
+                exchangeRateDTOlist.add(new ExchangeRateDTO(resultSet.getInt(1),
+                        getCurrencyDTObyID(resultSet.getInt(2)),
+                        getCurrencyDTObyID(resultSet.getInt(3)),
+                        resultSet.getInt(4)));
+            }
+            resp.setContentType("application/json; charset=UTF-8");
+            out = resp.getWriter();
+            String out1 = objectMapper.writeValueAsString(exchangeRateDTOlist);
+            out.println(out1);
+            statement.close();
+            resultSet.close();
+            connection.close();
+        } catch (SQLException | IOException e) {
+            resp.setStatus(500);
+            showError(resp, String.valueOf(e));
+        }
+    }
+
+    public void getSpecificExchangeRate(HttpServletRequest req, HttpServletResponse resp){
+
+    }
+
     private int findCurrencyByCode(String code) {
         DBConnection connection = new DBConnection();
-        String query = "SELECT * FROM currencies WHERE code = '" + code + "';";
+        String query = "SELECT * FROM currencies WHERE code = ?";
         int out = 0;
         try {
-            Statement statement = connection.getConnection().createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
+            prStatement = connection.getConnection().prepareStatement(query);
+            prStatement.setString(1, code);
+            ResultSet resultSet = prStatement.executeQuery();
             if(resultSet.next()){
                 out = resultSet.getInt(1);
             }
             resultSet.close();
-            statement.close();
+            prStatement.close();
             connection.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return out;
+    }
+    private CurrencyDTO getCurrencyDTObyID(int id){
+        DBConnection connection = new DBConnection();
+        String query = "SELECT * FROM currencies WHERE id = " + id + ";";
+        CurrencyDTO out;
+        try {
+            Statement statement = connection.getConnection().createStatement();
+            ResultSet resultSet = statement.executeQuery(query);
+            resultSet.next();
+            out = new CurrencyDTO(resultSet.getInt(1),
+                    resultSet.getString(2),
+                    resultSet.getString(3),
+                    resultSet.getString(4));
+            statement.close();
+            resultSet.close();
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return out;
+    }
+    public void showError(HttpServletResponse resp, String message){
+        try {
+            resp.setContentType("application/json; charset=UTF-8");
+            out = resp.getWriter();
+            out.println(objectMapper.writeValueAsString(new MessageDTO(message)));
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
