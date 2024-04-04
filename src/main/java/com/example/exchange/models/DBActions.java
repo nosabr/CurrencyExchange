@@ -19,16 +19,15 @@ import java.util.List;
 
 public class DBActions {
     private PreparedStatement prStatement;
-    private Statement statement;
     private PrintWriter out;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public void getAllCurrencies(HttpServletResponse resp){
         DBConnection connection = new DBConnection(); // подключение к БД
         String query = "SELECT * FROM currencies"; // запрос
         try {
-            statement = connection.getConnection().createStatement(); //создаем утверждение?
-            ResultSet resultSet = statement.executeQuery(query);
+            prStatement = connection.getConnection().prepareStatement(query); //создаем утверждение?
+            ResultSet resultSet = prStatement.executeQuery();
             List<CurrencyDTO> currencyDTOList = new ArrayList<>(); // список со всеми рядами данных
             while (resultSet.next()){ // добавление всех полей в список
                 currencyDTOList.add(new CurrencyDTO(resultSet.getInt(1),
@@ -40,7 +39,7 @@ public class DBActions {
             out = resp.getWriter();
             String out1 = objectMapper.writeValueAsString(currencyDTOList);
             out.println(out1);
-            statement.close();
+            prStatement.close();
             resultSet.close();
             connection.close();
         } catch (SQLException | IOException e){
@@ -58,9 +57,10 @@ public class DBActions {
             showError(resp, "Wrong url");
         } else {
             try {
-                String query = "SELECT * FROM currencies WHERE code = '" + urls[urls.length - 1] + "'";
-                Statement statement = connection.getConnection().createStatement();
-                ResultSet resultSet = statement.executeQuery(query);
+                String query = "SELECT * FROM currencies WHERE code = ?";
+                prStatement = connection.getConnection().prepareStatement(query);
+                prStatement.setString(1, urls[urls.length - 1].toUpperCase());
+                ResultSet resultSet = prStatement.executeQuery();
                 String out1 = null;
                 if(resultSet.next()){
                     CurrencyDTO targetCurrency = new CurrencyDTO(resultSet.getInt(1),
@@ -76,7 +76,7 @@ public class DBActions {
                     resp.setStatus(404);
                     showError(resp, "No such currency");
                 }
-                statement.close();
+                prStatement.close();
                 resultSet.close();
                 connection.close();
             } catch (SQLException | IOException e) {
@@ -137,8 +137,8 @@ public class DBActions {
         DBConnection connection = new DBConnection();
         String query = "SELECT * FROM exchangerates";
         try {
-            statement = connection.getConnection().createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
+            prStatement = connection.getConnection().prepareStatement(query);
+            ResultSet resultSet = prStatement.executeQuery();
             List<ExchangeRateDTO> exchangeRateDTOlist = new ArrayList<>();
             while(resultSet.next()){
                 exchangeRateDTOlist.add(new ExchangeRateDTO(resultSet.getInt(1),
@@ -150,7 +150,7 @@ public class DBActions {
             out = resp.getWriter();
             String out1 = objectMapper.writeValueAsString(exchangeRateDTOlist);
             out.println(out1);
-            statement.close();
+            prStatement.close();
             resultSet.close();
             connection.close();
         } catch (SQLException | IOException e) {
@@ -223,17 +223,18 @@ public class DBActions {
     }
     private CurrencyDTO getCurrencyDTObyID(int id){
         DBConnection connection = new DBConnection();
-        String query = "SELECT * FROM currencies WHERE id = " + id + ";";
+        String query = "SELECT * FROM currencies WHERE id = ?";
         CurrencyDTO out;
         try {
-            Statement statement = connection.getConnection().createStatement();
-            ResultSet resultSet = statement.executeQuery(query);
+            prStatement = connection.getConnection().prepareStatement(query);
+            prStatement.setInt(1,id);
+            ResultSet resultSet = prStatement.executeQuery();
             resultSet.next();
             out = new CurrencyDTO(resultSet.getInt(1),
                     resultSet.getString(2),
                     resultSet.getString(3),
                     resultSet.getString(4));
-            statement.close();
+            prStatement.close();
             resultSet.close();
             connection.close();
         } catch (SQLException e) {
