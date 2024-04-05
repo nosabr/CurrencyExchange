@@ -212,7 +212,10 @@ public class DBActions {
         if(baseCurrencyID == 0 || targetCurrencyID == 0){
             resp.setStatus(404);
             showError(resp, "No such currency(s) found in DB");
-        } else {
+        } else if(isExchangeRateInDB(baseCurrencyID,targetCurrencyID)){
+            resp.setStatus(409);
+            showError(resp, "That exchange rate already in DB");
+        }else {
             String queryInsert = "INSERT INTO exchangerates (basecurrencyid, targetcurrencyid, rate) " +
                     "VALUES (?, ?, ?)";
             String querySelect = "SELECT * FROM exchangerates WHERE basecurrencyid = ? AND " +
@@ -243,6 +246,27 @@ public class DBActions {
                 throw new RuntimeException(e);
             }
 
+        }
+    }
+
+    private boolean isExchangeRateInDB(int baseCurrencyID, int targetCurrencyID) {
+        DBConnection connection = new DBConnection();
+        try {
+            String querySelect = "SELECT * FROM exchangerates WHERE (basecurrencyid = ? AND " +
+                    "targetcurrencyid = ?) OR (basecurrencyid = ? AND targetcurrencyid = ?)";
+            prStatement = connection.getConnection().prepareStatement(querySelect);
+            prStatement.setInt(1,baseCurrencyID);
+            prStatement.setInt(2,targetCurrencyID);
+            prStatement.setInt(3,targetCurrencyID);
+            prStatement.setInt(4,baseCurrencyID);
+            ResultSet rs = prStatement.executeQuery();
+            if(rs.next()){
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
