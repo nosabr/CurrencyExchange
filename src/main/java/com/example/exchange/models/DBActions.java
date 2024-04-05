@@ -202,6 +202,50 @@ public class DBActions {
         }
     }
 
+    public void insertNewExchangeRate(HttpServletRequest req, HttpServletResponse resp) {
+        DBConnection connection = new DBConnection();
+        String baseCurrencyCode = req.getParameter("baseCurrencyCode");
+        String targetCurrencyCode = req.getParameter("targetCurrencyCode");
+        int baseCurrencyID = findCurrencyByCode(baseCurrencyCode);
+        int targetCurrencyID = findCurrencyByCode(targetCurrencyCode);
+        int rate = Integer.parseInt(req.getParameter("rate"));
+        if(baseCurrencyID == 0 || targetCurrencyID == 0){
+            resp.setStatus(404);
+            showError(resp, "No such currency(s) found in DB");
+        } else {
+            String queryInsert = "INSERT INTO exchangerates (basecurrencyid, targetcurrencyid, rate) " +
+                    "VALUES (?, ?, ?)";
+            String querySelect = "SELECT * FROM exchangerates WHERE basecurrencyid = ? AND " +
+                    "targetcurrencyid = ?";
+            try {
+                prStatement = connection.getConnection().prepareStatement(queryInsert);
+                prStatement.setInt(1,baseCurrencyID);
+                prStatement.setInt(2,targetCurrencyID);
+                prStatement.setInt(3, rate);
+                prStatement.executeUpdate();
+                prStatement = connection.getConnection().prepareStatement(querySelect);
+                prStatement.setInt(1,baseCurrencyID);
+                prStatement.setInt(2,targetCurrencyID);
+                ResultSet rs = prStatement.executeQuery();
+                if(rs.next()){
+                    ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
+                            getCurrencyDTObyID(baseCurrencyID), getCurrencyDTObyID(targetCurrencyID),
+                            rs.getInt(4));
+                    resp.setContentType("application/json; charset=UTF-8");
+                    out = resp.getWriter();
+                    String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
+                    out.println(out1);
+                }
+                connection.close();
+                prStatement.close();
+                rs.close();
+            } catch (SQLException | IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }
+    }
+
     private int findCurrencyByCode(String code) {
         DBConnection connection = new DBConnection();
         String query = "SELECT * FROM currencies WHERE code = ?";
@@ -252,4 +296,6 @@ public class DBActions {
             throw new RuntimeException(e);
         }
     }
+
+
 }

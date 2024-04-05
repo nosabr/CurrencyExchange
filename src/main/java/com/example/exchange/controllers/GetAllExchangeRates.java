@@ -20,6 +20,6 @@ public class GetAllExchangeRates extends HttpServlet {
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
+        actions.insertNewExchangeRate(req,resp);
     }
 }
