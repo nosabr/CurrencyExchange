@@ -10,7 +10,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.postgresql.jdbc.ResourceLock;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
@@ -144,7 +146,7 @@ public class DBActions {
                 exchangeRateDTOlist.add(new ExchangeRateDTO(resultSet.getInt(1),
                         getCurrencyDTObyID(resultSet.getInt(2)),
                         getCurrencyDTObyID(resultSet.getInt(3)),
-                        resultSet.getInt(4)));
+                        resultSet.getDouble(4)));
             }
             resp.setContentType("application/json; charset=UTF-8");
             out = resp.getWriter();
@@ -184,7 +186,7 @@ public class DBActions {
                 if(rs.next()){
                     ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
                             getCurrencyDTObyID(rs.getInt(2)),getCurrencyDTObyID(rs.getInt(3)),
-                            rs.getInt(4));
+                            rs.getDouble(4));
                     resp.setContentType("application/json; charset=UTF-8");
                     out = resp.getWriter();
                     String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
@@ -208,14 +210,18 @@ public class DBActions {
         String targetCurrencyCode = req.getParameter("targetCurrencyCode");
         int baseCurrencyID = findCurrencyByCode(baseCurrencyCode);
         int targetCurrencyID = findCurrencyByCode(targetCurrencyCode);
-        int rate = Integer.parseInt(req.getParameter("rate"));
-        if(baseCurrencyID == 0 || targetCurrencyID == 0){
+        String rateString = req.getParameter("rate");
+        if(baseCurrencyCode == null || targetCurrencyCode == null || rateString == null){
+            resp.setStatus(400);
+            showError(resp, "Missing parameter");
+        }else if(baseCurrencyID == 0 || targetCurrencyID == 0){
             resp.setStatus(404);
             showError(resp, "No such currency(s) found in DB");
-        } else if(isExchangeRateInDB(baseCurrencyID,targetCurrencyID)){
+        } else if(isExchangeRatePairInDB(baseCurrencyID,targetCurrencyID)){
             resp.setStatus(409);
             showError(resp, "That exchange rate already in DB");
         }else {
+            double rate = Double.parseDouble(rateString);
             String queryInsert = "INSERT INTO exchangerates (basecurrencyid, targetcurrencyid, rate) " +
                     "VALUES (?, ?, ?)";
             String querySelect = "SELECT * FROM exchangerates WHERE basecurrencyid = ? AND " +
@@ -224,7 +230,7 @@ public class DBActions {
                 prStatement = connection.getConnection().prepareStatement(queryInsert);
                 prStatement.setInt(1,baseCurrencyID);
                 prStatement.setInt(2,targetCurrencyID);
-                prStatement.setInt(3, rate);
+                prStatement.setDouble(3, rate);
                 prStatement.executeUpdate();
                 prStatement = connection.getConnection().prepareStatement(querySelect);
                 prStatement.setInt(1,baseCurrencyID);
@@ -233,7 +239,7 @@ public class DBActions {
                 if(rs.next()){
                     ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
                             getCurrencyDTObyID(baseCurrencyID), getCurrencyDTObyID(targetCurrencyID),
-                            rs.getInt(4));
+                            rs.getDouble(4));
                     resp.setContentType("application/json; charset=UTF-8");
                     out = resp.getWriter();
                     String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
@@ -249,7 +255,75 @@ public class DBActions {
         }
     }
 
+    public void updateExchangeRate(HttpServletRequest req, HttpServletResponse resp) {
+        DBConnection connection = new DBConnection();
+        String path = req.getRequestURI();
+        String[] urls = path.split("/");
+        String baseCurrencyCode = urls[urls.length - 1].substring(0,3).toUpperCase();
+        String targetCurrencyCode = urls[urls.length - 1].substring(3).toUpperCase();
+        int baseCurrencyID = findCurrencyByCode(baseCurrencyCode);
+        int targetCurrencyID = findCurrencyByCode(targetCurrencyCode);
+        String rateString = getParameter(req);
+        if(urls[urls.length - 1].length() != 6 || !urls[urls.length - 2].equals("exchangeRate")
+            || rateString == null){
+                resp.setStatus(400);
+                showError(resp, "Wrong Request");
+        } else if(!isExchangeRateInDB(baseCurrencyID,targetCurrencyID)){
+            resp.setStatus(404);
+            showError(resp, "No such currency pair found");
+        } else {
+            double rate = Double.parseDouble(rateString);
+            String queryUpdate = "UPDATE exchangerates SET rate = ? WHERE " +
+                    "basecurrencyid = ? AND targetcurrencyid = ?";
+            String querySelect = "SELECT * FROM exchangerates WHERE basecurrencyid = ?" +
+                    "AND targetcurrencyid = ?";
+            try {
+                prStatement = connection.getConnection().prepareStatement(queryUpdate);
+                prStatement.setInt(2,baseCurrencyID);
+                prStatement.setInt(3,targetCurrencyID);
+                prStatement.setDouble(1,rate);
+                prStatement.executeUpdate();
+                prStatement = connection.getConnection().prepareStatement(querySelect);
+                prStatement.setInt(1,baseCurrencyID);
+                prStatement.setInt(2,targetCurrencyID);
+                ResultSet rs = prStatement.executeQuery();
+                if(rs.next()){
+                    ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
+                            getCurrencyDTObyID(rs.getInt(2)), getCurrencyDTObyID(rs.getInt(3)),
+                            rs.getDouble(4));
+                    resp.setContentType("application/json; charset=UTF-8");
+                    out = resp.getWriter();
+                    String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
+                    out.println(out1);
+                    connection.close();
+                    rs.close();
+                    prStatement.close();
+                }
+            } catch (SQLException | IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+    }
     private boolean isExchangeRateInDB(int baseCurrencyID, int targetCurrencyID) {
+        DBConnection connection = new DBConnection();
+        try {
+            String querySelect = "SELECT * FROM exchangerates WHERE basecurrencyid = ? " +
+                    "AND targetcurrencyid = ?";
+            prStatement = connection.getConnection().prepareStatement(querySelect);
+            prStatement.setInt(1,baseCurrencyID);
+            prStatement.setInt(2,targetCurrencyID);
+            ResultSet rs = prStatement.executeQuery();
+            if(rs.next()){
+                return true;
+            } else {
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private boolean isExchangeRatePairInDB(int baseCurrencyID, int targetCurrencyID) {
         DBConnection connection = new DBConnection();
         try {
             String querySelect = "SELECT * FROM exchangerates WHERE (basecurrencyid = ? AND " +
@@ -266,6 +340,26 @@ public class DBActions {
                 return false;
             }
         } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public static String getParameter(HttpServletRequest request) {
+        BufferedReader br;
+        String[] par;
+
+        InputStreamReader reader;
+        try {
+            reader = new InputStreamReader(
+                    request.getInputStream());
+            br = new BufferedReader(reader);
+            String data = br.readLine();
+            par = data.split("=");
+            if (par.length == 1) {
+                return "";
+            } else {
+                return par[1];
+            }
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -320,6 +414,7 @@ public class DBActions {
             throw new RuntimeException(e);
         }
     }
+
 
 
 }

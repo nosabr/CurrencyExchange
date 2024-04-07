@@ -16,4 +16,17 @@ public class GetSpecificExchangeRate extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         actions.getSpecificExchangeRate(req,resp);
     }
+
+    @Override
+    protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+        String method = req.getMethod();
+        if (!method.equals("PATCH")) {
+            super.service(req, resp);
+        } else {
+            this.doPatch(req, resp);
+        }
+    }
+    protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
+        actions.updateExchangeRate(req,resp);
+    }
 }

@@ -4,9 +4,9 @@ public class ExchangeRateDTO {
     private int id;
     private CurrencyDTO baseCurrency;
     private CurrencyDTO targetCurrency;
-    private int rate;
+    private double rate;
 
-    public ExchangeRateDTO(int id, CurrencyDTO baseCurrencyDTO, CurrencyDTO targetCurrencyDTO, int rate) {
+    public ExchangeRateDTO(int id, CurrencyDTO baseCurrencyDTO, CurrencyDTO targetCurrencyDTO, double rate) {
         this.id = id;
         this.baseCurrency = baseCurrencyDTO;
         this.targetCurrency = targetCurrencyDTO;
@@ -25,7 +25,7 @@ public class ExchangeRateDTO {
         return targetCurrency;
     }
 
-    public int getRate() {
+    public double getRate() {
         return rate;
     }
 
