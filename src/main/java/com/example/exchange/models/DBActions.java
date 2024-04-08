@@ -3,6 +3,7 @@ package com.example.exchange.models;
 
 
 import com.example.exchange.DTO.CurrencyDTO;
+import com.example.exchange.DTO.ExchangeCalcDTO;
 import com.example.exchange.DTO.ExchangeRateDTO;
 import com.example.exchange.DTO.MessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -37,14 +38,11 @@ public class DBActions {
                         resultSet.getString(3),
                         resultSet.getString(4)));
             }
-            resp.setContentType("application/json; charset=UTF-8");
-            out = resp.getWriter();
-            String out1 = objectMapper.writeValueAsString(currencyDTOList);
-            out.println(out1);
+            showJSON(resp, currencyDTOList);
             prStatement.close();
             resultSet.close();
             connection.close();
-        } catch (SQLException | IOException e){
+        } catch (SQLException e){
             resp.setStatus(500);
             showError(resp, "DB is not available");
         }
@@ -63,25 +61,20 @@ public class DBActions {
                 prStatement = connection.getConnection().prepareStatement(query);
                 prStatement.setString(1, urls[urls.length - 1].toUpperCase());
                 ResultSet resultSet = prStatement.executeQuery();
-                String out1 = null;
                 if(resultSet.next()){
                     CurrencyDTO targetCurrency = new CurrencyDTO(resultSet.getInt(1),
                             resultSet.getString(2),
                             resultSet.getString(3),
                             resultSet.getString(4));
-                    resp.setContentType("application/json; charset=UTF-8");
-                    out = resp.getWriter();
-                    out1 = objectMapper.writeValueAsString(targetCurrency);
-                    out.println(out1);
-                }
-                if(out1 == null){
+                    showJSON(resp, targetCurrency);
+                } else {
                     resp.setStatus(404);
                     showError(resp, "No such currency");
                 }
                 prStatement.close();
                 resultSet.close();
                 connection.close();
-            } catch (SQLException | IOException e) {
+            } catch (SQLException e) {
                 resp.setStatus(500);
                 showError(resp, "DB error");
             }
@@ -118,16 +111,14 @@ public class DBActions {
                 prStatement.setString(1,code);
                 ResultSet rs = prStatement.executeQuery();
                 if (rs.next()) {
-                    resp.setContentType("application/json; charset=UTF-8");
-                    out = resp.getWriter();
-                    String out1 = objectMapper.writeValueAsString(new CurrencyDTO(rs.getInt(1),
-                            rs.getString(2), rs.getString(3), rs.getString(4)));
-                    out.println(out1);
+                    CurrencyDTO currencyDTO = new CurrencyDTO(rs.getInt(1),
+                            rs.getString(2), rs.getString(3), rs.getString(4));
+                    showJSON(resp, currencyDTO);
                 }
                 prStatement.close();
                 rs.close();
                 connection.close();
-            } catch (SQLException | IOException e) {
+            } catch (SQLException e) {
                 resp.setStatus(500);
                 showError(resp, "DB is not available");
             }
@@ -148,14 +139,11 @@ public class DBActions {
                         getCurrencyDTObyID(resultSet.getInt(3)),
                         resultSet.getDouble(4)));
             }
-            resp.setContentType("application/json; charset=UTF-8");
-            out = resp.getWriter();
-            String out1 = objectMapper.writeValueAsString(exchangeRateDTOlist);
-            out.println(out1);
+            showJSON(resp, exchangeRateDTOlist);
             prStatement.close();
             resultSet.close();
             connection.close();
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             resp.setStatus(500);
             showError(resp, String.valueOf(e));
         }
@@ -187,10 +175,7 @@ public class DBActions {
                     ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
                             getCurrencyDTObyID(rs.getInt(2)),getCurrencyDTObyID(rs.getInt(3)),
                             rs.getDouble(4));
-                    resp.setContentType("application/json; charset=UTF-8");
-                    out = resp.getWriter();
-                    String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
-                    out.println(out1);
+                    showJSON(resp, exchangeRateDTO);
                     rs.close();
                     prStatement.close();
                     connection.close();
@@ -198,7 +183,7 @@ public class DBActions {
                     resp.setStatus(404);
                     showError(resp, "No such currency pair found");
                 }
-            } catch (SQLException | IOException e) {
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -240,19 +225,101 @@ public class DBActions {
                     ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
                             getCurrencyDTObyID(baseCurrencyID), getCurrencyDTObyID(targetCurrencyID),
                             rs.getDouble(4));
-                    resp.setContentType("application/json; charset=UTF-8");
-                    out = resp.getWriter();
-                    String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
-                    out.println(out1);
+                    showJSON(resp, exchangeRateDTO);
                 }
                 connection.close();
                 prStatement.close();
                 rs.close();
-            } catch (SQLException | IOException e) {
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
 
         }
+    }
+
+    public void calculateExchangeRate(HttpServletRequest req, HttpServletResponse resp){
+        DBConnection connection = new DBConnection();
+        String from = req.getParameter("from");
+        String to = req.getParameter("to");
+        String amountString = req.getParameter("amount");
+        if(from == null || to == null || amountString == null
+                || from.isEmpty() || to.isEmpty() || amountString.isEmpty()){
+            resp.setStatus(400);
+            showError(resp, "Invalid Request");
+        } else if(findCurrencyByCode(from.toUpperCase()) == 0 || findCurrencyByCode(to.toUpperCase()) == 0){
+            resp.setStatus(400);
+            showError(resp,"No such currencies");
+        } else {
+            double amountDouble = Double.parseDouble(amountString);
+            double convertedAmount;
+            int fromID = findCurrencyByCode(from.toUpperCase());
+            int toID = findCurrencyByCode(to.toUpperCase());
+            String fromToQuery = "SELECT * FROM exchangerates WHERE basecurrencyid = ? " +
+                    "AND targetcurrencyid = ?";
+            try {
+                prStatement = connection.getConnection().prepareStatement(fromToQuery);
+                prStatement.setInt(1,fromID);
+                prStatement.setInt(2,toID);
+                ResultSet rs = prStatement.executeQuery();
+                CurrencyDTO fromDTO = getCurrencyDTObyID(fromID);
+                CurrencyDTO toDTO = getCurrencyDTObyID(toID);
+                if(rs.next()){
+                    convertedAmount = rs.getDouble(4) * amountDouble;
+                    ExchangeCalcDTO calcDTO = new ExchangeCalcDTO(fromDTO, toDTO, rs.getDouble(4),
+                            amountDouble, convertedAmount);
+                    showJSON(resp, calcDTO);
+                } else {
+                    prStatement = connection.getConnection().prepareStatement(fromToQuery);
+                    prStatement.setInt(1,toID);
+                    prStatement.setInt(2,fromID);
+                    rs = prStatement.executeQuery();
+                    if (rs.next()){
+                        double rate = 1 / rs.getDouble(4);
+                        convertedAmount = rate * amountDouble;
+                        ExchangeCalcDTO calcDTO = new ExchangeCalcDTO(fromDTO, toDTO, rate,
+                                amountDouble, convertedAmount);
+                        showJSON(resp, calcDTO);
+                    } else {
+                        String USDcalc = "SELECT * FROM exchangerates WHERE basecurrencyid = ? " +
+                                "AND targetcurrencyid = ?";
+                        double rateFrom = 0;
+                        double rateTo = 0;
+                        int USDid = findCurrencyByCode("USD");
+                        prStatement = connection.getConnection().prepareStatement(USDcalc);
+                        prStatement.setInt(1,USDid);
+                        prStatement.setInt(2,fromID);
+                        rs = prStatement.executeQuery();
+                        if (rs.next()){
+                            rateFrom = rs.getDouble(4);
+                        }
+                        prStatement = connection.getConnection().prepareStatement(USDcalc);
+                        prStatement.setInt(1,USDid);
+                        prStatement.setInt(2,toID);
+                        rs = prStatement.executeQuery();
+                        if(rs.next()){
+                            rateTo = rs.getDouble(4);
+                        }
+                        if(rateTo == 0 || rateFrom == 0){
+                            resp.setStatus(404);
+                            showError(resp, "No suitable exchange rates for calculation");
+                        }
+                        else{
+                            double rate = rateFrom / rateTo;
+                            convertedAmount =  amountDouble / rate;
+                            ExchangeCalcDTO calcDTO = new ExchangeCalcDTO(fromDTO, toDTO, rate,
+                                    amountDouble, convertedAmount);
+                            showJSON(resp, calcDTO);
+                        }
+                    }
+                }
+                prStatement.close();
+                rs.close();
+                connection.close();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     public void updateExchangeRate(HttpServletRequest req, HttpServletResponse resp) {
@@ -291,15 +358,12 @@ public class DBActions {
                     ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
                             getCurrencyDTObyID(rs.getInt(2)), getCurrencyDTObyID(rs.getInt(3)),
                             rs.getDouble(4));
-                    resp.setContentType("application/json; charset=UTF-8");
-                    out = resp.getWriter();
-                    String out1 = objectMapper.writeValueAsString(exchangeRateDTO);
-                    out.println(out1);
+                    showJSON(resp, exchangeRateDTO);
                     connection.close();
                     rs.close();
                     prStatement.close();
                 }
-            } catch (SQLException | IOException e) {
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -343,7 +407,7 @@ public class DBActions {
             throw new RuntimeException(e);
         }
     }
-    public static String getParameter(HttpServletRequest request) {
+    private static String getParameter(HttpServletRequest request) {
         BufferedReader br;
         String[] par;
 
@@ -415,6 +479,16 @@ public class DBActions {
         }
     }
 
+    public <T> void showJSON(HttpServletResponse resp, T obj){
+        try {
+            resp.setContentType("application/json; charset=UTF-8");
+            out = resp.getWriter();
+            String out1 = objectMapper.writeValueAsString(obj);
+            out.println(out1);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
 }
