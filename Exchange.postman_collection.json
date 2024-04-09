@@ -1,0 +1,175 @@
+{
+	"info": {
+		"_postman_id": "480b8516-ca0c-46af-b38c-0b7ae43d35f3",
+		"name": "Exchange",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "33870601"
+	},
+	"item": [
+		{
+			"name": "Currency",
+			"item": [
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/currencies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/Exchange_war_exploded/currencies",
+						"description": "Вывести все валюты"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/currencies",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "name",
+									"value": "Russian Rouble",
+									"type": "text"
+								},
+								{
+									"key": "code",
+									"value": "RUB",
+									"type": "text"
+								},
+								{
+									"key": "sign",
+									"value": "₽",
+									"type": "text"
+								}
+							]
+						},
+						"url": "http://localhost:8080/Exchange_war_exploded/currencies",
+						"description": "Добавить валюту"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/currency/KZT",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/Exchange_war_exploded/currency/KZT",
+						"description": "Вывести определенную валюту"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ExchangeRate",
+			"item": [
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/exchangeRates",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/Exchange_war_exploded/exchangeRates",
+						"description": "Вывести все валютные пары"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/exchangeRates",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "baseCurrencyCode",
+									"value": "EUR",
+									"type": "text"
+								},
+								{
+									"key": "targetCurrencyCode",
+									"value": "RUB",
+									"type": "text"
+								},
+								{
+									"key": "rate",
+									"value": "100",
+									"type": "text"
+								}
+							]
+						},
+						"url": "http://localhost:8080/Exchange_war_exploded/exchangeRates",
+						"description": "Добавить валютную пару"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/exchangeRate/USDRUB",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": "http://localhost:8080/Exchange_war_exploded/exchangeRate/USDRUB",
+						"description": "Вывести определенную валютную пару"
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8080/Exchange_war_exploded/exchangeRate/USDRUB",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "rate",
+									"value": "90",
+									"type": "text"
+								}
+							]
+						},
+						"url": "http://localhost:8080/Exchange_war_exploded/exchangeRate/USDKZT",
+						"description": "Обновить валютную пару"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "http://localhost:8080/Exchange_war_exploded/exchange?from=USD&to=KZT&rate=100",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/Exchange_war_exploded/exchange?from=KZT&to=USD&amount=10000",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"Exchange_war_exploded",
+						"exchange"
+					],
+					"query": [
+						{
+							"key": "from",
+							"value": "KZT"
+						},
+						{
+							"key": "to",
+							"value": "USD"
+						},
+						{
+							"key": "amount",
+							"value": "10000"
+						}
+					]
+				},
+				"description": "Произвести обмен валют"
+			},
+			"response": []
+		}
+	]
+}

@@ -350,6 +350,8 @@ public class DBActions {
                 prStatement.setInt(3,targetCurrencyID);
                 prStatement.setDouble(1,rate);
                 prStatement.executeUpdate();
+                prStatement.close();
+
                 prStatement = connection.getConnection().prepareStatement(querySelect);
                 prStatement.setInt(1,baseCurrencyID);
                 prStatement.setInt(2,targetCurrencyID);
@@ -379,10 +381,17 @@ public class DBActions {
             prStatement.setInt(2,targetCurrencyID);
             ResultSet rs = prStatement.executeQuery();
             if(rs.next()){
+                prStatement.close();
+                rs.close();
+                connection.close();
                 return true;
             } else {
+                prStatement.close();
+                rs.close();
+                connection.close();
                 return false;
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
