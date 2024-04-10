@@ -2,14 +2,13 @@ package com.example.exchange.models;
 
 
 
-import com.example.exchange.DTO.CurrencyDTO;
-import com.example.exchange.DTO.ExchangeCalcDTO;
-import com.example.exchange.DTO.ExchangeRateDTO;
-import com.example.exchange.DTO.MessageDTO;
+import com.example.exchange.dto.CurrencyDTO;
+import com.example.exchange.dto.ExchangeCalcDTO;
+import com.example.exchange.dto.ExchangeRateDTO;
+import com.example.exchange.dto.MessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.postgresql.jdbc.ResourceLock;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +16,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Currency;
 import java.util.List;
 
 public class DBActions {
