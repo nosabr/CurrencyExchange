@@ -1,0 +1,31 @@
+package com.example.exchange.models;
+
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+
+import javax.net.ssl.HostnameVerifier;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Objects;
+
+public class ConnectionManager {
+    private static HikariDataSource connectionPool;
+
+    private ConnectionManager(){
+        String path = Objects.requireNonNull(ConnectionManager.class.getClassLoader().
+                getResource("exchange.db")).toString();
+        HikariConfig config = new HikariConfig();
+        config.setDriverClassName("org.sqlite.JDBC");
+        config.setJdbcUrl("jdbc:sqlite:" + path);
+        config.setMaximumPoolSize(10);
+        connectionPool = new HikariDataSource(config);
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return connectionPool.getConnection();
+    }
+
+    static void closeConnection(){
+        connectionPool.close();
+    }
+}

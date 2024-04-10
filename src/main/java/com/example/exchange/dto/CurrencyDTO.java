@@ -1,4 +1,4 @@
-package com.example.exchange.DTO;
+package com.example.exchange.dto;
 
 public class CurrencyDTO {
     private int id;
