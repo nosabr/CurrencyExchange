@@ -10,6 +10,7 @@ public class CurrencyService {
     CurrenciesDAO currenciesDAO = new CurrenciesDAO();
     public final List<CurrencyDTO> findAll(){
         List<CurrencyDTO> currencies = currenciesDAO.findAll();
+
         return currencies;
     }
 }
