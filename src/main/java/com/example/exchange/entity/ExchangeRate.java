@@ -1,12 +1,12 @@
-package com.example.exchange.dto;
+package com.example.exchange.entity;
 
-public class ExchangeRateDTO {
+public class ExchangeRate {
     private int id;
-    private CurrencyDTO baseCurrency;
-    private CurrencyDTO targetCurrency;
+    private Currency baseCurrency;
+    private Currency targetCurrency;
     private double rate;
 
-    public ExchangeRateDTO(int id, CurrencyDTO baseCurrencyDTO, CurrencyDTO targetCurrencyDTO, double rate) {
+    public ExchangeRate(int id, Currency baseCurrencyDTO, Currency targetCurrencyDTO, double rate) {
         this.id = id;
         this.baseCurrency = baseCurrencyDTO;
         this.targetCurrency = targetCurrencyDTO;
@@ -17,11 +17,11 @@ public class ExchangeRateDTO {
         return id;
     }
 
-    public CurrencyDTO getBaseCurrency() {
+    public Currency getBaseCurrency() {
         return baseCurrency;
     }
 
-    public CurrencyDTO getTargetCurrency() {
+    public Currency getTargetCurrency() {
         return targetCurrency;
     }
 
@@ -33,11 +33,11 @@ public class ExchangeRateDTO {
         this.id = id;
     }
 
-    public void setBaseCurrency(CurrencyDTO baseCurrency) {
+    public void setBaseCurrency(Currency baseCurrency) {
         this.baseCurrency = baseCurrency;
     }
 
-    public void setTargetCurrency(CurrencyDTO targetCurrency) {
+    public void setTargetCurrency(Currency targetCurrency) {
         this.targetCurrency = targetCurrency;
     }
 

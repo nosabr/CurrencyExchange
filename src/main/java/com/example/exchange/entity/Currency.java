@@ -1,12 +1,12 @@
-package com.example.exchange.dto;
+package com.example.exchange.entity;
 
-public class CurrencyDTO {
+public class Currency {
     private int id;
     private String code;
     private String fullname;
     private String sign;
 
-    public CurrencyDTO(int id, String code, String fullname, String sign) {
+    public Currency(int id, String code, String fullname, String sign) {
         this.id = id;
         this.code = code;
         this.fullname = fullname;

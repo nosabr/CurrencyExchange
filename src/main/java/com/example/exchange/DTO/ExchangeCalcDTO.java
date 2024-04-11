@@ -1,17 +1,19 @@
-package com.example.exchange.dto;
+package com.example.exchange.DTO;
+
+import com.example.exchange.entity.Currency;
 
 public class ExchangeCalcDTO {
-    private CurrencyDTO from;
-    private CurrencyDTO to;
+    private Currency from;
+    private Currency to;
     private double rate;
     private double amount;
     private double convertedAmount;
 
-    public void setFrom(CurrencyDTO from) {
+    public void setFrom(Currency from) {
         this.from = from;
     }
 
-    public ExchangeCalcDTO(CurrencyDTO from, CurrencyDTO to, double rate, double amount, double convertedAmount) {
+    public ExchangeCalcDTO(Currency from, Currency to, double rate, double amount, double convertedAmount) {
         this.from = from;
         this.to = to;
         this.rate = rate;
@@ -19,7 +21,7 @@ public class ExchangeCalcDTO {
         this.convertedAmount = convertedAmount;
     }
 
-    public void setTo(CurrencyDTO to) {
+    public void setTo(Currency to) {
         this.to = to;
     }
 
@@ -35,11 +37,11 @@ public class ExchangeCalcDTO {
         this.convertedAmount = convertedAmount;
     }
 
-    public CurrencyDTO getFrom() {
+    public Currency getFrom() {
         return from;
     }
 
-    public CurrencyDTO getTo() {
+    public Currency getTo() {
         return to;
     }
 
