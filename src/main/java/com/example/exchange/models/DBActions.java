@@ -2,10 +2,10 @@ package com.example.exchange.models;
 
 
 
-import com.example.exchange.dto.CurrencyDTO;
-import com.example.exchange.dto.ExchangeCalcDTO;
-import com.example.exchange.dto.ExchangeRateDTO;
-import com.example.exchange.dto.MessageDTO;
+import com.example.exchange.entity.Currency;
+import com.example.exchange.DTO.ExchangeCalcDTO;
+import com.example.exchange.entity.ExchangeRate;
+import com.example.exchange.DTO.MessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -29,9 +29,9 @@ public class DBActions {
         try {
             prStatement = connection.getConnection().prepareStatement(query); //создаем утверждение?
             ResultSet resultSet = prStatement.executeQuery();
-            List<CurrencyDTO> currencyDTOList = new ArrayList<>(); // список со всеми рядами данных
+            List<Currency> currencyDTOList = new ArrayList<>(); // список со всеми рядами данных
             while (resultSet.next()){ // добавление всех полей в список
-                currencyDTOList.add(new CurrencyDTO(resultSet.getInt(1),
+                currencyDTOList.add(new Currency(resultSet.getInt(1),
                         resultSet.getString(2),
                         resultSet.getString(3),
                         resultSet.getString(4)));
@@ -60,7 +60,7 @@ public class DBActions {
                 prStatement.setString(1, urls[urls.length - 1].toUpperCase());
                 ResultSet resultSet = prStatement.executeQuery();
                 if(resultSet.next()){
-                    CurrencyDTO targetCurrency = new CurrencyDTO(resultSet.getInt(1),
+                    Currency targetCurrency = new Currency(resultSet.getInt(1),
                             resultSet.getString(2),
                             resultSet.getString(3),
                             resultSet.getString(4));
@@ -109,7 +109,7 @@ public class DBActions {
                 prStatement.setString(1,code);
                 ResultSet rs = prStatement.executeQuery();
                 if (rs.next()) {
-                    CurrencyDTO currencyDTO = new CurrencyDTO(rs.getInt(1),
+                    Currency currencyDTO = new Currency(rs.getInt(1),
                             rs.getString(2), rs.getString(3), rs.getString(4));
                     showJSON(resp, currencyDTO);
                 }
@@ -130,9 +130,9 @@ public class DBActions {
         try {
             prStatement = connection.getConnection().prepareStatement(query);
             ResultSet resultSet = prStatement.executeQuery();
-            List<ExchangeRateDTO> exchangeRateDTOlist = new ArrayList<>();
+            List<ExchangeRate> exchangeRateDTOlist = new ArrayList<>();
             while(resultSet.next()){
-                exchangeRateDTOlist.add(new ExchangeRateDTO(resultSet.getInt(1),
+                exchangeRateDTOlist.add(new ExchangeRate(resultSet.getInt(1),
                         getCurrencyDTObyID(resultSet.getInt(2)),
                         getCurrencyDTObyID(resultSet.getInt(3)),
                         resultSet.getDouble(4)));
@@ -170,7 +170,7 @@ public class DBActions {
                 prStatement.setInt(4,currID1);
                 ResultSet rs = prStatement.executeQuery();
                 if(rs.next()){
-                    ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
+                    ExchangeRate exchangeRateDTO = new ExchangeRate(rs.getInt(1),
                             getCurrencyDTObyID(rs.getInt(2)),getCurrencyDTObyID(rs.getInt(3)),
                             rs.getDouble(4));
                     showJSON(resp, exchangeRateDTO);
@@ -220,7 +220,7 @@ public class DBActions {
                 prStatement.setInt(2,targetCurrencyID);
                 ResultSet rs = prStatement.executeQuery();
                 if(rs.next()){
-                    ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
+                    ExchangeRate exchangeRateDTO = new ExchangeRate(rs.getInt(1),
                             getCurrencyDTObyID(baseCurrencyID), getCurrencyDTObyID(targetCurrencyID),
                             rs.getDouble(4));
                     showJSON(resp, exchangeRateDTO);
@@ -259,8 +259,8 @@ public class DBActions {
                 prStatement.setInt(1,fromID);
                 prStatement.setInt(2,toID);
                 ResultSet rs = prStatement.executeQuery();
-                CurrencyDTO fromDTO = getCurrencyDTObyID(fromID);
-                CurrencyDTO toDTO = getCurrencyDTObyID(toID);
+                Currency fromDTO = getCurrencyDTObyID(fromID);
+                Currency toDTO = getCurrencyDTObyID(toID);
                 if(rs.next()){
                     convertedAmount = rs.getDouble(4) * amountDouble;
                     ExchangeCalcDTO calcDTO = new ExchangeCalcDTO(fromDTO, toDTO, rs.getDouble(4),
@@ -355,7 +355,7 @@ public class DBActions {
                 prStatement.setInt(2,targetCurrencyID);
                 ResultSet rs = prStatement.executeQuery();
                 if(rs.next()){
-                    ExchangeRateDTO exchangeRateDTO = new ExchangeRateDTO(rs.getInt(1),
+                    ExchangeRate exchangeRateDTO = new ExchangeRate(rs.getInt(1),
                             getCurrencyDTObyID(rs.getInt(2)), getCurrencyDTObyID(rs.getInt(3)),
                             rs.getDouble(4));
                     showJSON(resp, exchangeRateDTO);
@@ -454,16 +454,16 @@ public class DBActions {
         }
         return out;
     }
-    private CurrencyDTO getCurrencyDTObyID(int id){
+    private Currency getCurrencyDTObyID(int id){
         DBConnection connection = new DBConnection();
         String query = "SELECT * FROM currencies WHERE id = ?";
-        CurrencyDTO out;
+        Currency out;
         try {
             prStatement = connection.getConnection().prepareStatement(query);
             prStatement.setInt(1,id);
             ResultSet resultSet = prStatement.executeQuery();
             resultSet.next();
-            out = new CurrencyDTO(resultSet.getInt(1),
+            out = new Currency(resultSet.getInt(1),
                     resultSet.getString(2),
                     resultSet.getString(3),
                     resultSet.getString(4));

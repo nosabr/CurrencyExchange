@@ -11,9 +11,13 @@ import java.util.Objects;
 public class ConnectionManager {
     private static HikariDataSource connectionPool;
 
-    private ConnectionManager(){
-        String path = Objects.requireNonNull(ConnectionManager.class.getClassLoader().
-                getResource("exchange.db")).toString();
+    static {
+        initializeConnectionPool();
+    }
+
+    private static void initializeConnectionPool() {
+        String path = Objects.requireNonNull(ConnectionManager.class.getClassLoader()
+                .getResource("exchange.db")).toString();
         HikariConfig config = new HikariConfig();
         config.setDriverClassName("org.sqlite.JDBC");
         config.setJdbcUrl("jdbc:sqlite:" + path);
