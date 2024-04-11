@@ -18,9 +18,8 @@ import java.util.List;
 public class GetAllCurrencies extends HttpServlet {
 
     RespondUtil respondUtil = new RespondUtil();
-    private final CurrencyService service = new CurrencyService();
+    CurrencyService service = new CurrencyService();
 
-    DBActions actions = new DBActions();
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         List<Currency> currencies = service.findAll();
@@ -35,5 +34,6 @@ public class GetAllCurrencies extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         //actions.insertNewCurrency(req,resp);
+
     }
 }

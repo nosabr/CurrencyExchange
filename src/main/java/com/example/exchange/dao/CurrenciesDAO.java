@@ -12,6 +12,7 @@ import java.util.List;
 
 public class CurrenciesDAO {
     private static final String FIND_ALL = "SELECT * FROM currencies;";
+    private static final String FIND_BY_CODE = "SELECT * FROM currencies WHERE code = ?";
 
     public List<Currency> findAll() {
         List<Currency> currencies = new ArrayList<>();
@@ -26,6 +27,22 @@ public class CurrenciesDAO {
             throw new RuntimeException(e);
         }
         return currencies;
+    }
+
+    public Currency findByCode(String code){
+        Currency currency = null;
+        try{
+            Connection connection = ConnectionManager.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE);
+            preparedStatement.setString(1,code);
+            ResultSet rs = preparedStatement.executeQuery();
+            if(rs.next()){
+                currency = createCurrency(rs);
+            }
+            return currency;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
     private Currency createCurrency(ResultSet rs) throws SQLException{
         return new Currency(rs.getInt(1), rs.getString(2),
