@@ -27,7 +27,12 @@ public class GetSpecificCurrency extends HttpServlet {
         } else {
             String code = urls[urls.length - 1];
             Currency currency = currencyService.findByCode(code);
-
+            if (currency != null) {
+                respondUtil.showJSON(resp,currency);
+            } else {
+                resp.setStatus(404);
+                respondUtil.showError(resp, "Not found");
+            }
         }
     }
 
