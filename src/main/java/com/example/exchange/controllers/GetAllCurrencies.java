@@ -1,5 +1,6 @@
 package com.example.exchange.controllers;
 
+import com.example.exchange.DTO.CurrencyRequestDTO;
 import com.example.exchange.entity.Currency;
 import com.example.exchange.models.DBActions;
 import com.example.exchange.services.CurrencyService;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet("/currencies")
@@ -34,6 +36,22 @@ public class GetAllCurrencies extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         //actions.insertNewCurrency(req,resp);
-
+        String code = req.getParameter("code");
+        String name = req.getParameter("name");
+        String sign = req.getParameter("sign");
+        if(code == null || name == null || sign == null
+            || code.isEmpty() || name.isEmpty() || sign.isEmpty()){
+            resp.setStatus(400);
+            respondUtil.showError(resp,"Required form is missing");
+        } else if(code.length() != 3 || sign.length() != 1){
+            resp.setStatus(400);
+            respondUtil.showError(resp, "Invalid Request");
+        } else if (service.findByCode(code) != null){
+            resp.setStatus(409);
+            respondUtil.showError(resp, "Given currency already in DB");
+        }else {
+            service.insert(new CurrencyRequestDTO(code,name,sign));
+            respondUtil.showJSON(resp,service.findByCode(code));
+        }
     }
 }

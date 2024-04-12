@@ -1,5 +1,6 @@
 package com.example.exchange.services;
 
+import com.example.exchange.DTO.CurrencyRequestDTO;
 import com.example.exchange.dao.CurrenciesDAO;
 import com.example.exchange.entity.Currency;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,6 +14,10 @@ public class CurrencyService {
     }
 
     public Currency findByCode(String code){
-        return currenciesDAO.findByCode(code);
+        return currenciesDAO.findByCode(code.toUpperCase());
+    }
+
+    public void insert(CurrencyRequestDTO currencyRequestDTO) {
+        currenciesDAO.insert(currencyRequestDTO);
     }
 }
