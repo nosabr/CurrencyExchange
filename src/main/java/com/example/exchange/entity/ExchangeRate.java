@@ -6,10 +6,10 @@ public class ExchangeRate {
     private Currency targetCurrency;
     private double rate;
 
-    public ExchangeRate(int id, Currency baseCurrencyDTO, Currency targetCurrencyDTO, double rate) {
+    public ExchangeRate(int id, Currency baseCurrency, Currency targetCurrency, double rate) {
         this.id = id;
-        this.baseCurrency = baseCurrencyDTO;
-        this.targetCurrency = targetCurrencyDTO;
+        this.baseCurrency = baseCurrency;
+        this.targetCurrency = targetCurrency;
         this.rate = rate;
     }
 

@@ -14,6 +14,7 @@ import java.util.List;
 public class CurrenciesDAO {
     private static final String FIND_ALL = "SELECT * FROM currencies;";
     private static final String FIND_BY_CODE = "SELECT * FROM currencies WHERE code = ?";
+    private static final String FIND_BY_ID = "SELECT * FROM currencies WHERE id = ?";
     private static final String INSERT = "INSERT INTO currencies (code, fullname, sign) VALUES (?,?,?)";
 
     public List<Currency> findAll() {
@@ -40,6 +41,24 @@ public class CurrenciesDAO {
             Connection connection = ConnectionManager.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_CODE);
             preparedStatement.setString(1,code);
+            ResultSet rs = preparedStatement.executeQuery();
+            if(rs.next()){
+                currency = createCurrency(rs);
+            }
+            connection.close();
+            preparedStatement.close();
+            rs.close();
+            return currency;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public Currency findById(int id){
+        Currency currency = null;
+        try{
+            Connection connection = ConnectionManager.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_BY_ID);
+            preparedStatement.setInt(1,id);
             ResultSet rs = preparedStatement.executeQuery();
             if(rs.next()){
                 currency = createCurrency(rs);
