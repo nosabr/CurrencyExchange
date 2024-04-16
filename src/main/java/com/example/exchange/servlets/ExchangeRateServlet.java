@@ -1,6 +1,5 @@
 package com.example.exchange.servlets;
 
-import com.example.exchange.models.DBActions;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;

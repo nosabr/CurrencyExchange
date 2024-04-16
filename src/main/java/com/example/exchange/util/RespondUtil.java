@@ -1,6 +1,6 @@
 package com.example.exchange.util;
 
-import com.example.exchange.DTO.MessageDTO;
+import com.example.exchange.dto.MessageDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 

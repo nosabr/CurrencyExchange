@@ -1,7 +1,6 @@
 package com.example.exchange.servlets;
 
 import com.example.exchange.entity.ExchangeRate;
-import com.example.exchange.models.DBActions;
 import com.example.exchange.services.ExchangeRatesService;
 import com.example.exchange.util.RespondUtil;
 import jakarta.servlet.ServletException;

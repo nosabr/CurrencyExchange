@@ -1,6 +1,6 @@
 package com.example.exchange.servlets;
 
-import com.example.exchange.DTO.CurrencyRequestDTO;
+import com.example.exchange.dto.CurrencyRequestDTO;
 import com.example.exchange.entity.Currency;
 import com.example.exchange.services.CurrencyService;
 import com.example.exchange.util.RespondUtil;

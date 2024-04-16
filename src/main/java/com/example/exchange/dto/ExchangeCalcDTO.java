@@ -1,4 +1,4 @@
-package com.example.exchange.DTO;
+package com.example.exchange.dto;
 
 import com.example.exchange.entity.Currency;
 
