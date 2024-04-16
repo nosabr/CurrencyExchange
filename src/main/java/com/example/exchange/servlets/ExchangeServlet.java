@@ -1,4 +1,4 @@
-package com.example.exchange.controllers;
+package com.example.exchange.servlets;
 
 import com.example.exchange.models.DBActions;
 import jakarta.servlet.ServletException;
@@ -11,10 +11,10 @@ import java.io.IOException;
 
 @WebServlet ("/exchange")
 
-public class GetExchangeCalc extends HttpServlet {
-    DBActions actions = new DBActions();
+public class ExchangeServlet extends HttpServlet {
+
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        actions.calculateExchangeRate(req, resp);
+        //actions.calculateExchangeRate(req, resp);
     }
 }

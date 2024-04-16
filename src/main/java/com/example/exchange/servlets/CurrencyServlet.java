@@ -1,8 +1,6 @@
-package com.example.exchange.controllers;
+package com.example.exchange.servlets;
 
-import com.example.exchange.dao.CurrenciesDAO;
 import com.example.exchange.entity.Currency;
-import com.example.exchange.models.DBActions;
 import com.example.exchange.services.CurrencyService;
 import com.example.exchange.util.RespondUtil;
 import jakarta.servlet.ServletException;
@@ -13,7 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 @WebServlet ("/currency/*")
-public class GetSpecificCurrency extends HttpServlet {
+public class CurrencyServlet extends HttpServlet {
     CurrencyService currencyService = new CurrencyService();
     RespondUtil respondUtil = new RespondUtil();
 
@@ -35,6 +33,4 @@ public class GetSpecificCurrency extends HttpServlet {
             }
         }
     }
-
-
 }

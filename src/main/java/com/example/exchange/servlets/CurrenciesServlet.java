@@ -1,11 +1,9 @@
-package com.example.exchange.controllers;
+package com.example.exchange.servlets;
 
 import com.example.exchange.DTO.CurrencyRequestDTO;
 import com.example.exchange.entity.Currency;
-import com.example.exchange.models.DBActions;
 import com.example.exchange.services.CurrencyService;
 import com.example.exchange.util.RespondUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -13,11 +11,10 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet("/currencies")
-public class GetAllCurrencies extends HttpServlet {
+public class CurrenciesServlet extends HttpServlet {
 
     RespondUtil respondUtil = new RespondUtil();
     CurrencyService service = new CurrencyService();

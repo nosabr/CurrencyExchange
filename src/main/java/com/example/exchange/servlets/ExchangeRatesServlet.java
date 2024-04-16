@@ -1,4 +1,4 @@
-package com.example.exchange.controllers;
+package com.example.exchange.servlets;
 
 import com.example.exchange.entity.ExchangeRate;
 import com.example.exchange.models.DBActions;
@@ -11,18 +11,15 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @WebServlet ("/exchangeRates")
-public class GetAllExchangeRates extends HttpServlet {
+public class ExchangeRatesServlet extends HttpServlet {
 
-    DBActions actions = new DBActions();
     ExchangeRatesService exchangeRatesService = new ExchangeRatesService();
     RespondUtil respondUtil = new RespondUtil();
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        //actions.getAllExchangeRates(resp);
         List<ExchangeRate> exchangeRateList = exchangeRatesService.findAll();
         if(exchangeRateList == null){
             resp.setStatus(404);
@@ -30,11 +27,5 @@ public class GetAllExchangeRates extends HttpServlet {
         } else {
             respondUtil.showJSON(resp, exchangeRateList);
         }
-
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        actions.insertNewExchangeRate(req,resp);
     }
 }
