@@ -13,7 +13,7 @@ public class ExchangeRateServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        //actions.getSpecificExchangeRate(req,resp);
+
     }
 
     @Override

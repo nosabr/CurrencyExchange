@@ -27,4 +27,9 @@ public class ExchangeRatesServlet extends HttpServlet {
             respondUtil.showJSON(resp, exchangeRateList);
         }
     }
+
+    @Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+
+    }
 }
