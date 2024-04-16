@@ -1,4 +1,4 @@
-package com.example.exchange.dto;
+package com.example.exchange.DTO;
 
 public class CurrencyRequestDTO {
     private String code;

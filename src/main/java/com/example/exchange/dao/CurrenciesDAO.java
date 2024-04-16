@@ -1,6 +1,6 @@
 package com.example.exchange.dao;
 
-import com.example.exchange.dto.CurrencyRequestDTO;
+import com.example.exchange.DTO.CurrencyRequestDTO;
 import com.example.exchange.entity.Currency;
 import com.example.exchange.models.ConnectionManager;
 

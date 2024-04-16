@@ -1,5 +1,4 @@
 package com.example.exchange.entity;
-
 public class Currency {
     private int id;
     private String code;
