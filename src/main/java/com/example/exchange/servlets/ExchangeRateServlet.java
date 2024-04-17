@@ -1,5 +1,8 @@
 package com.example.exchange.servlets;
 
+import com.example.exchange.DTO.RequestExchangeRateDTO;
+import com.example.exchange.entity.ExchangeRate;
+import com.example.exchange.services.ExchangeRatesService;
 import com.example.exchange.util.ParameterValidator;
 import com.example.exchange.util.RespondUtil;
 import jakarta.servlet.ServletException;
@@ -14,6 +17,7 @@ import java.io.IOException;
 @WebServlet ("/exchangeRate/*")
 public class ExchangeRateServlet extends HttpServlet {
     RespondUtil respondUtil = new RespondUtil();
+    ExchangeRatesService exchangeRatesService = new ExchangeRatesService();
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -23,9 +27,10 @@ public class ExchangeRateServlet extends HttpServlet {
             respondUtil.showError(resp, "Invalid URL");
         } else{
             path = path.substring(1);
-            String baseCurrencyCode = path.substring(0,3);
-            String targetCurrencyCode = path.substring(3,6);
-            respondUtil.showJSON(resp, baseCurrencyCode + targetCurrencyCode);
+            RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO();
+            requestExchangeRateDTO.setBaseCurrencyCode(path.substring(0,3));
+            requestExchangeRateDTO.setTargetCurrencyCode(path.substring(3,6));
+            //respondUtil.showJSON(resp, exchangeRatesService.findByCodes(requestExchangeRateDTO));
         }
     }
 

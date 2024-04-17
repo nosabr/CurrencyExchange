@@ -2,14 +2,14 @@ package com.example.exchange.entity;
 
 public class ExchangeRate {
     private int id;
-    private Currency baseCurrency;
-    private Currency targetCurrency;
+    private int baseCurrencyId;
+    private int targetCurrencyID;
     private double rate;
 
-    public ExchangeRate(int id, Currency baseCurrency, Currency targetCurrency, double rate) {
+    public ExchangeRate(int id, int baseCurrencyId, int targetCurrencyID, double rate) {
         this.id = id;
-        this.baseCurrency = baseCurrency;
-        this.targetCurrency = targetCurrency;
+        this.baseCurrencyId = baseCurrencyId;
+        this.targetCurrencyID = targetCurrencyID;
         this.rate = rate;
     }
 
@@ -17,12 +17,12 @@ public class ExchangeRate {
         return id;
     }
 
-    public Currency getBaseCurrency() {
-        return baseCurrency;
+    public int getBaseCurrencyId() {
+        return baseCurrencyId;
     }
 
-    public Currency getTargetCurrency() {
-        return targetCurrency;
+    public int getTargetCurrencyID() {
+        return targetCurrencyID;
     }
 
     public double getRate() {
@@ -33,15 +33,15 @@ public class ExchangeRate {
         this.id = id;
     }
 
-    public void setBaseCurrency(Currency baseCurrency) {
-        this.baseCurrency = baseCurrency;
+    public void setBaseCurrencyId(int baseCurrencyId) {
+        this.baseCurrencyId = baseCurrencyId;
     }
 
-    public void setTargetCurrency(Currency targetCurrency) {
-        this.targetCurrency = targetCurrency;
+    public void setTargetCurrencyID(int targetCurrencyID) {
+        this.targetCurrencyID = targetCurrencyID;
     }
 
-    public void setRate(int rate) {
+    public void setRate(double rate) {
         this.rate = rate;
     }
 }

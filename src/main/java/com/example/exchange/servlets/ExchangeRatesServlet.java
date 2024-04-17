@@ -1,5 +1,6 @@
 package com.example.exchange.servlets;
 
+import com.example.exchange.DTO.ResponseExchangeRateDTO;
 import com.example.exchange.entity.ExchangeRate;
 import com.example.exchange.services.ExchangeRatesService;
 import com.example.exchange.util.RespondUtil;
@@ -19,7 +20,7 @@ public class ExchangeRatesServlet extends HttpServlet {
     RespondUtil respondUtil = new RespondUtil();
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        List<ExchangeRate> exchangeRateList = exchangeRatesService.findAll();
+        List<ResponseExchangeRateDTO> exchangeRateList = exchangeRatesService.findAll();
         if(exchangeRateList == null){
             resp.setStatus(404);
             respondUtil.showError(resp,"Empty DB");
@@ -28,8 +29,4 @@ public class ExchangeRatesServlet extends HttpServlet {
         }
     }
 
-    @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-
-    }
 }
