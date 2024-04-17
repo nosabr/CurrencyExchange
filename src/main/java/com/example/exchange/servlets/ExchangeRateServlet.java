@@ -34,7 +34,7 @@ public class ExchangeRateServlet extends HttpServlet {
             ResponseExchangeRateDTO responseExchangeRateDTO = exchangeRatesService.findByCodes(requestExchangeRateDTO);
             if(responseExchangeRateDTO == null){
                 resp.setStatus(404);
-                respondUtil.showError(resp, "DB is empty");
+                respondUtil.showError(resp, "No such exchange pair");
             } else {
                 respondUtil.showJSON(resp, responseExchangeRateDTO);
             }

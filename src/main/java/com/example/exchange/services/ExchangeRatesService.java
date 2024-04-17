@@ -25,6 +25,11 @@ public class ExchangeRatesService {
         ExchangeRate exchangeRate = exchangeRatesDAO.findByCodes(request);
         return buildExchangeRateDto(exchangeRate);
     }
+
+    public ResponseExchangeRateDTO add(RequestExchangeRateDTO request){
+        exchangeRatesDAO.add(request);
+        return findByCodes(request);
+    }
     private ResponseExchangeRateDTO buildExchangeRateDto (ExchangeRate exchangeRate){
         if (exchangeRate == null){
             return null;

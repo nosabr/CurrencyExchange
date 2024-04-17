@@ -3,6 +3,15 @@ package com.example.exchange.DTO;
 public class RequestExchangeRateDTO {
     String baseCurrencyCode;
     String targetCurrencyCode;
+    String rate;
+
+    public String getRate() {
+        return rate;
+    }
+
+    public void setRate(String rate) {
+        this.rate = rate;
+    }
 
     public RequestExchangeRateDTO() {
     }
