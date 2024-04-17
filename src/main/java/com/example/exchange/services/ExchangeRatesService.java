@@ -21,15 +21,18 @@ public class ExchangeRatesService {
                 .collect(toList());
     }
 
-    private ResponseExchangeRateDTO buildExchangeRateDto (ExchangeRate exchangeRate){
-        Currency baseCurrency = currenciesDAO.findById(exchangeRate.getBaseCurrencyId());
-        Currency targetCurrency = currenciesDAO.findById(exchangeRate.getTargetCurrencyID());
-        return new ResponseExchangeRateDTO(exchangeRate.getId(),baseCurrency,
-                targetCurrency,exchangeRate.getRate());
+    public ResponseExchangeRateDTO findByCodes(RequestExchangeRateDTO request) {
+        ExchangeRate exchangeRate = exchangeRatesDAO.findByCodes(request);
+        return buildExchangeRateDto(exchangeRate);
     }
-
-//    public ResponseExchangeRateDTO findByCodes(RequestExchangeRateDTO request) {
-//        ExchangeRate exchangeRate = exchangeRatesDAO.findByCodes(request);
-//        return exchangeRate;
-//    }
+    private ResponseExchangeRateDTO buildExchangeRateDto (ExchangeRate exchangeRate){
+        if (exchangeRate == null){
+            return null;
+        } else {
+            Currency baseCurrency = currenciesDAO.findById(exchangeRate.getBaseCurrencyId());
+            Currency targetCurrency = currenciesDAO.findById(exchangeRate.getTargetCurrencyID());
+            return new ResponseExchangeRateDTO(exchangeRate.getId(), baseCurrency,
+                    targetCurrency, exchangeRate.getRate());
+        }
+    }
 }

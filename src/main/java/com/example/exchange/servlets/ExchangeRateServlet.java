@@ -1,6 +1,7 @@
 package com.example.exchange.servlets;
 
 import com.example.exchange.DTO.RequestExchangeRateDTO;
+import com.example.exchange.DTO.ResponseExchangeRateDTO;
 import com.example.exchange.entity.ExchangeRate;
 import com.example.exchange.services.ExchangeRatesService;
 import com.example.exchange.util.ParameterValidator;
@@ -30,7 +31,13 @@ public class ExchangeRateServlet extends HttpServlet {
             RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO();
             requestExchangeRateDTO.setBaseCurrencyCode(path.substring(0,3));
             requestExchangeRateDTO.setTargetCurrencyCode(path.substring(3,6));
-            //respondUtil.showJSON(resp, exchangeRatesService.findByCodes(requestExchangeRateDTO));
+            ResponseExchangeRateDTO responseExchangeRateDTO = exchangeRatesService.findByCodes(requestExchangeRateDTO);
+            if(responseExchangeRateDTO == null){
+                resp.setStatus(404);
+                respondUtil.showError(resp, "DB is empty");
+            } else {
+                respondUtil.showJSON(resp, responseExchangeRateDTO);
+            }
         }
     }
 

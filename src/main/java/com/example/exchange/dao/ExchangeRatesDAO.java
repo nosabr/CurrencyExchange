@@ -13,11 +13,11 @@ import java.util.List;
 
 public class ExchangeRatesDAO {
     private static String FIND_ALL = "SELECT * FROM exchangerates";
-    private static final String FIND_BY_CODE_PAIR =
-            "SELECT er.id, er.base_currency_id, er.target_currency_id, er.rate " +
-            "FROM exchange_rates er " +
-            "INNER JOIN currencies base_curr ON er.base_currency_id = base_curr.id " +
-            "INNER JOIN currencies target_curr ON er.target_currency_id = target_curr.id " +
+    private static final String FIND_PAIR_BY_CODES =
+            "SELECT er.id, er.basecurrencyid, er.targetcurrencyid, er.rate " +
+            "FROM exchangerates er " +
+            "INNER JOIN currencies base_curr ON er.basecurrencyid = base_curr.id " +
+            "INNER JOIN currencies target_curr ON er.targetcurrencyid = target_curr.id " +
             "WHERE base_curr.code = ? AND target_curr.code = ?;";
 
     CurrenciesDAO currenciesDAO = new CurrenciesDAO();
@@ -42,7 +42,20 @@ public class ExchangeRatesDAO {
     public ExchangeRate findByCodes(RequestExchangeRateDTO request) {
         String baseCurrencyCode = request.getBaseCurrencyCode();
         String targetCurrencyCode = request.getTargetCurrencyCode();
-        return new ExchangeRate(1,1,1,1);
+        try {
+            Connection connection = ConnectionManager.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(FIND_PAIR_BY_CODES);
+            preparedStatement.setString(1,baseCurrencyCode);
+            preparedStatement.setString(2,targetCurrencyCode);
+            ResultSet rs = preparedStatement.executeQuery();
+            if(rs.next()){
+                return createExchangeRate(rs);
+            } else {
+                return null;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ExchangeRate createExchangeRate(ResultSet rs){
