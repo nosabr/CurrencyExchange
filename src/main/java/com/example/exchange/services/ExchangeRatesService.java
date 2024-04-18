@@ -40,4 +40,9 @@ public class ExchangeRatesService {
                     targetCurrency, exchangeRate.getRate());
         }
     }
+
+    public ResponseExchangeRateDTO update(RequestExchangeRateDTO requestExchangeRateDTO) {
+        ExchangeRatesDAO.update(requestExchangeRateDTO);
+        return findByCodes(requestExchangeRateDTO);
+    }
 }

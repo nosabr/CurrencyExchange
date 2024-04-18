@@ -12,7 +12,9 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 
 
 @WebServlet ("/exchangeRate/*")
@@ -29,8 +31,8 @@ public class ExchangeRateServlet extends HttpServlet {
         } else{
             path = path.substring(1);
             RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO();
-            requestExchangeRateDTO.setBaseCurrencyCode(path.substring(0,3));
-            requestExchangeRateDTO.setTargetCurrencyCode(path.substring(3,6));
+            requestExchangeRateDTO.setBaseCurrencyCode(path.substring(0,3).toUpperCase());
+            requestExchangeRateDTO.setTargetCurrencyCode(path.substring(3,6).toUpperCase());
             ResponseExchangeRateDTO responseExchangeRateDTO = exchangeRatesService.findByCodes(requestExchangeRateDTO);
             if(responseExchangeRateDTO == null){
                 resp.setStatus(404);
@@ -51,6 +53,46 @@ public class ExchangeRateServlet extends HttpServlet {
         }
     }
     protected void doPatch(HttpServletRequest req, HttpServletResponse resp) {
+        String path = req.getPathInfo();
+        String rate = getParameter(req);
+        if(!ParameterValidator.isPathValid(path) || !ParameterValidator.isPairValid(path.substring(1))
+                || !ParameterValidator.isRateValid(rate)){
+            resp.setStatus(400);
+            respondUtil.showError(resp, "Invalid Request");
+        } else{
+            path = path.substring(1);
+            RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO();
+            requestExchangeRateDTO.setBaseCurrencyCode(path.substring(0,3).toUpperCase());
+            requestExchangeRateDTO.setTargetCurrencyCode(path.substring(3,6).toUpperCase());
+            requestExchangeRateDTO.setRate(rate);
+            ResponseExchangeRateDTO responseExchangeRateDTO = exchangeRatesService.findByCodes(requestExchangeRateDTO);
+            if(responseExchangeRateDTO == null){
+                resp.setStatus(404);
+                respondUtil.showError(resp, "No such exchange pair");
+            } else {
+                responseExchangeRateDTO = exchangeRatesService.update(requestExchangeRateDTO);
+                respondUtil.showJSON(resp, responseExchangeRateDTO);
+            }
+        }
+    }
+    public static String getParameter(HttpServletRequest request) {
+        BufferedReader br;
+        String[] par;
 
+        InputStreamReader reader;
+        try {
+            reader = new InputStreamReader(
+                    request.getInputStream());
+            br = new BufferedReader(reader);
+            String data = br.readLine();
+            par = data.split("=");
+            if (par.length == 1) {
+                return "";
+            } else {
+                return par[1];
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

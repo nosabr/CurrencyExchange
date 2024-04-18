@@ -20,8 +20,30 @@ public class ExchangeRatesDAO {
                     "INNER JOIN currencies base_curr ON er.basecurrencyid = base_curr.id " +
                     "INNER JOIN currencies target_curr ON er.targetcurrencyid = target_curr.id " +
                     "WHERE base_curr.code = ? AND target_curr.code = ?;";
+    private static final String UPDATE = "UPDATE exchangerates SET rate = ? " +
+            "WHERE basecurrencyid IN (SELECT id FROM currencies WHERE code = ?) " +
+            "AND targetcurrencyid IN (SELECT id FROM currencies WHERE code = ?)";
 //
     CurrenciesDAO currenciesDAO = new CurrenciesDAO();
+
+    public static void update(RequestExchangeRateDTO requestExchangeRateDTO) {
+        String baseCurrencyCode = requestExchangeRateDTO.getBaseCurrencyCode();
+        String targetCurrencyCode = requestExchangeRateDTO.getTargetCurrencyCode();
+        double rate = Double.parseDouble(requestExchangeRateDTO.getRate());
+        try {
+            Connection connection = ConnectionManager.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(UPDATE);
+            preparedStatement.setDouble(1,rate);
+            preparedStatement.setString(2,baseCurrencyCode);
+            preparedStatement.setString(3,targetCurrencyCode);
+            preparedStatement.executeUpdate();
+            preparedStatement.close();
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public List<ExchangeRate> findAll() {
         try {
             Connection connection = ConnectionManager.getConnection();
@@ -50,7 +72,11 @@ public class ExchangeRatesDAO {
             preparedStatement.setString(2,targetCurrencyCode);
             ResultSet rs = preparedStatement.executeQuery();
             if(rs.next()){
-                return createExchangeRate(rs);
+                ExchangeRate exchangeRate = createExchangeRate(rs);
+                connection.close();
+                preparedStatement.close();
+                rs.close();
+                return exchangeRate;
             } else {
                 return null;
             }
@@ -69,6 +95,8 @@ public class ExchangeRatesDAO {
             preparedStatement.setInt(2,targetCurrencyId);
             preparedStatement.setDouble(3, rate);
             preparedStatement.executeUpdate();
+            connection.close();
+            preparedStatement.close();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
