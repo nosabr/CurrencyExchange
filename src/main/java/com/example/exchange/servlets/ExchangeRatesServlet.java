@@ -44,8 +44,8 @@ public class ExchangeRatesServlet extends HttpServlet {
         if(ParameterValidator.isCodeValid(baseCurrencyCode) && ParameterValidator.isCodeValid(targetCurrencyCode)
                 && ParameterValidator.isRateValid(rate)){
             RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO();
-            requestExchangeRateDTO.setTargetCurrencyCode(baseCurrencyCode);
-            requestExchangeRateDTO.setTargetCurrencyCode(targetCurrencyCode);
+            requestExchangeRateDTO.setBaseCurrencyCode(baseCurrencyCode.toUpperCase());
+            requestExchangeRateDTO.setTargetCurrencyCode(targetCurrencyCode.toUpperCase());
             requestExchangeRateDTO.setRate(rate);
             if(exchangeRatesDAO.isPairInDB(requestExchangeRateDTO)){
                 resp.setStatus(409);
@@ -56,6 +56,7 @@ public class ExchangeRatesServlet extends HttpServlet {
                 respondUtil.showError(resp, "No such currencies in DB");
             }else {
                 ResponseExchangeRateDTO responseExchangeRateDTO =  exchangeRatesService.add(requestExchangeRateDTO);
+                respondUtil.showJSON(resp, responseExchangeRateDTO);
             }
 
         } else {

@@ -1,9 +1,8 @@
-package com.example.exchange.models;
+package com.example.exchange.dao;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import javax.net.ssl.HostnameVerifier;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Objects;

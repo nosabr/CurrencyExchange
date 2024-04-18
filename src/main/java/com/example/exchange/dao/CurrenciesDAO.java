@@ -2,7 +2,6 @@ package com.example.exchange.dao;
 
 import com.example.exchange.DTO.CurrencyRequestDTO;
 import com.example.exchange.entity.Currency;
-import com.example.exchange.models.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

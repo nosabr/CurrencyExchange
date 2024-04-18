@@ -2,7 +2,6 @@ package com.example.exchange.dao;
 
 import com.example.exchange.DTO.RequestExchangeRateDTO;
 import com.example.exchange.entity.ExchangeRate;
-import com.example.exchange.models.ConnectionManager;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -18,7 +17,7 @@ public class ExchangeRatesDAO {
     private static final String FIND_PAIR_BY_CODES =
             "SELECT er.id, er.basecurrencyid, er.targetcurrencyid, er.rate " +
                     "FROM exchangerates er " +
-                    "INNER JOIN curencies base_curr ON er.basecurrencyid = base_curr.id " +
+                    "INNER JOIN currencies base_curr ON er.basecurrencyid = base_curr.id " +
                     "INNER JOIN currencies target_curr ON er.targetcurrencyid = target_curr.id " +
                     "WHERE base_curr.code = ? AND target_curr.code = ?;";
 //
