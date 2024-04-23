@@ -1,6 +1,7 @@
 package com.example.exchange.dao;
 
 import com.example.exchange.DTO.RequestExchangeRateDTO;
+import com.example.exchange.DTO.ResponseExchangeDTO;
 import com.example.exchange.entity.ExchangeRate;
 
 import java.sql.Connection;
@@ -119,4 +120,5 @@ public class ExchangeRatesDAO {
             throw new RuntimeException(e);
         }
     }
+
 }

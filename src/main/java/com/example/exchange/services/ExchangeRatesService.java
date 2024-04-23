@@ -1,6 +1,7 @@
 package com.example.exchange.services;
 
 import com.example.exchange.DTO.RequestExchangeRateDTO;
+import com.example.exchange.DTO.ResponseExchangeDTO;
 import com.example.exchange.DTO.ResponseExchangeRateDTO;
 import com.example.exchange.dao.CurrenciesDAO;
 import com.example.exchange.dao.ExchangeRatesDAO;
@@ -44,5 +45,35 @@ public class ExchangeRatesService {
     public ResponseExchangeRateDTO update(RequestExchangeRateDTO requestExchangeRateDTO) {
         ExchangeRatesDAO.update(requestExchangeRateDTO);
         return findByCodes(requestExchangeRateDTO);
+    }
+
+    public ResponseExchangeDTO calculate(RequestExchangeRateDTO directRequest) {
+        int amount = Integer.parseInt(directRequest.getRate());
+        Currency baseCurrency = currenciesDAO.findByCode(directRequest.getBaseCurrencyCode());
+        Currency targetCurrency = currenciesDAO.findByCode(directRequest.getTargetCurrencyCode());
+        RequestExchangeRateDTO reverseRequest = new RequestExchangeRateDTO(directRequest.getTargetCurrencyCode(),
+                directRequest.getBaseCurrencyCode());
+        ExchangeRate directExchange = exchangeRatesDAO.findByCodes(directRequest);
+        ExchangeRate reverseExchange = exchangeRatesDAO.findByCodes(reverseRequest);
+        if(directExchange != null){
+            return new ResponseExchangeDTO(baseCurrency,targetCurrency,directExchange.getRate(),
+                    amount, amount* directExchange.getRate());
+        } else if(reverseExchange != null) {
+            return new ResponseExchangeDTO(baseCurrency,targetCurrency,reverseExchange.getRate(),
+                    amount, amount / reverseExchange.getRate());
+        } else {
+            ExchangeRate baseToUsd = exchangeRatesDAO.findByCodes(new RequestExchangeRateDTO(
+                    "USD", directRequest.getBaseCurrencyCode()));
+            ExchangeRate usdToTarget = exchangeRatesDAO.findByCodes(new RequestExchangeRateDTO(
+                    "USD",directRequest.getTargetCurrencyCode()));
+            if(baseToUsd != null && usdToTarget != null){
+                double rate = 1 / baseToUsd.getRate() * usdToTarget.getRate();
+                return new ResponseExchangeDTO(baseCurrency, targetCurrency, rate,
+                        amount, amount * rate);
+            } else {
+                return null;
+            }
+        }
+
     }
 }

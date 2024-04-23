@@ -1,6 +1,8 @@
 package com.example.exchange.servlets;
 import com.example.exchange.DTO.RequestExchangeRateDTO;
+import com.example.exchange.DTO.ResponseExchangeDTO;
 import com.example.exchange.dao.ExchangeRatesDAO;
+import com.example.exchange.entity.ExchangeRate;
 import com.example.exchange.services.ExchangeRatesService;
 import com.example.exchange.util.ParameterValidator;
 import com.example.exchange.util.RespondUtil;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Optional;
 
 @WebServlet ("/exchange")
 
@@ -29,12 +32,15 @@ public class ExchangeServlet extends HttpServlet {
             resp.setStatus(400);
             respondUtil.showError(resp,"Missing argument");
         } else {
-            RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO();
-            requestExchangeRateDTO.setBaseCurrencyCode(from);
-            requestExchangeRateDTO.setTargetCurrencyCode(to);
-            if (!exchangeRatesDAO.isPairInDB(requestExchangeRateDTO)){
+            RequestExchangeRateDTO requestExchangeRateDTO = new RequestExchangeRateDTO(
+                    from.toUpperCase(),to.toUpperCase());
+            requestExchangeRateDTO.setRate(amount);
+            ResponseExchangeDTO responseExchangeDTO = exchangeRatesService.calculate(requestExchangeRateDTO);
+            if(responseExchangeDTO == null){
                 resp.setStatus(404);
-                respondUtil.showError(resp, "No such exchange rate in DB");
+                respondUtil.showError(resp,"Can not process that exchange");
+            } else {
+                respondUtil.showJSON(resp,responseExchangeDTO);
             }
         }
     }

@@ -4,6 +4,12 @@ public class RequestExchangeRateDTO {
     String baseCurrencyCode;
     String targetCurrencyCode;
     String rate;
+    public RequestExchangeRateDTO() {
+    }
+    public RequestExchangeRateDTO(String baseCurrencyCode, String targetCurrencyCode) {
+        this.baseCurrencyCode = baseCurrencyCode;
+        this.targetCurrencyCode = targetCurrencyCode;
+    }
 
     public String getRate() {
         return rate;
@@ -13,8 +19,7 @@ public class RequestExchangeRateDTO {
         this.rate = rate;
     }
 
-    public RequestExchangeRateDTO() {
-    }
+
 
     public String getBaseCurrencyCode() {
         return baseCurrencyCode;
